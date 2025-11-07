@@ -27,6 +27,7 @@ services:
       # - CHATTERBOX_EXAGGERATION=0.7
       # - CHATTERBOX_CFG_WEIGHT=0.4
       # - CHATTERBOX_TEMPERATURE=0.9
+      # - CHATTERBOX_VOICE=en-US-AvaMultilingualNeural  # Optional explicit voice name override
     volumes:
       - ./output:/app/output
     restart: unless-stopped
