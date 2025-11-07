@@ -154,6 +154,11 @@ python main.py mybook.epub \
 
 ### 🌐 Web GUI
 
+Run with uv (recommended for fast, isolated dependency resolution):
+```bash
+uv run web_gui.py
+```
+Or plain Python:
 ```bash
 python web_gui.py
 ```
@@ -163,6 +168,9 @@ python web_gui.py
 | ---------- | ----------------------------------- | ------------- |
 | `--host`   | Host to bind the Gradio web server  | `127.0.0.1`   |
 | `--port`   | Port to bind the Gradio web server  | `7860`        |
+
+#### TTS Engines in GUI
+The GUI now supports **Azure**, **Kokoro**, and **Chatterbox**. Selecting **Chatterbox** reveals override sliders (Exaggeration, CFG Weight, Temperature) and a Voice Override textbox. If left blank, voice resolution follows the precedence described in the Chatterbox section below.
 
 Then open your browser and interact with the friendly interface!
 

@@ -345,6 +345,13 @@ def validate_tts_settings():
             raise ValueError(
                 f"Kokoro TTS does not support voice '{settings.tts_voice}' for language '{settings.tts_lang}'"
             )
+    elif "chatterbox" == settings.tts_engine:
+        # Minimal validation for Chatterbox: ensure language & voice strings are non-empty.
+        # Chatterbox voice catalog is user-managed; we can't auto-validate against remote list yet.
+        if not settings.tts_lang:
+            raise ValueError("Chatterbox TTS requires --tts_lang to be specified.")
+        if not settings.tts_voice and not settings.chatterbox_voice:
+            raise ValueError("Chatterbox TTS requires a voice name (either --tts_voice or chatterbox_voice override).")
     else:
         raise ValueError(f"Unsupported TTS engine: {settings.tts_engine}")
     

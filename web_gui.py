@@ -8,7 +8,7 @@ from urllib.parse import unquote
 import gradio as gr
 
 from audible_epub3_maker.epub.epub_book import EpubBook
-from audible_epub3_maker.config import AZURE_TTS_KEY, AZURE_TTS_REGION
+from audible_epub3_maker.config import AZURE_TTS_KEY, AZURE_TTS_REGION, CHATTERBOX_VOICE
 from audible_epub3_maker.utils.constants import APP_NAME, APP_FULLNAME, OUTPUT_DIR, LOG_FILE
 from audible_epub3_maker.utils import helpers
 
@@ -109,7 +109,8 @@ def run_preview(input_file):
 
 def run_generation(input_file, output_dir, log_level, cleanup,
                    tts_engine, tts_lang, tts_voice, tts_speed,
-                   tts_chunk_len, newline_mode, align_threshold, max_workers):
+                   tts_chunk_len, newline_mode, align_threshold, max_workers,
+                   chatterbox_exaggeration, chatterbox_cfg_weight, chatterbox_temperature, chatterbox_voice):
     global aem_process
 
     if aem_process and aem_process.poll() is None:
@@ -132,6 +133,17 @@ def run_generation(input_file, output_dir, log_level, cleanup,
     ]
     if cleanup:
         args.append("--cleanup")
+
+    # Append Chatterbox-specific overrides if engine is chatterbox
+    if tts_engine.lower() == "chatterbox":
+        if chatterbox_exaggeration is not None:
+            args += ["--chatterbox_exaggeration", str(chatterbox_exaggeration)]
+        if chatterbox_cfg_weight is not None:
+            args += ["--chatterbox_cfg_weight", str(chatterbox_cfg_weight)]
+        if chatterbox_temperature is not None:
+            args += ["--chatterbox_temperature", str(chatterbox_temperature)]
+        if chatterbox_voice:
+            args += ["--chatterbox_voice", chatterbox_voice]
     
     print(args)
     
@@ -155,7 +167,8 @@ def check_process():
  
 def on_run_click(input_file, output_dir, log_level, cleanup,
                  tts_engine, tts_lang, tts_voice, tts_speed,
-                 tts_chunk_len, newline_mode, align_threshold, max_workers):
+                 tts_chunk_len, newline_mode, align_threshold, max_workers,
+                 chatterbox_exaggeration, chatterbox_cfg_weight, chatterbox_temperature, chatterbox_voice):
     # 检查 input_file, output_dir, tts_engine 必须不为空
     if not input_file:
         raise gr.Error(f"Select a EPUB file to process")
@@ -181,7 +194,11 @@ def on_run_click(input_file, output_dir, log_level, cleanup,
             tts_chunk_len=tts_chunk_len,
             newline_mode=newline_mode,
             align_threshold=align_threshold,
-            max_workers=max_workers
+            max_workers=max_workers,
+            chatterbox_exaggeration=chatterbox_exaggeration,
+            chatterbox_cfg_weight=chatterbox_cfg_weight,
+            chatterbox_temperature=chatterbox_temperature,
+            chatterbox_voice=chatterbox_voice
         )
     except Exception as e:
         raise gr.Error(f"{e}")
@@ -228,6 +245,17 @@ def on_engine_change(tts_engine):
         
     elif tts_name == "kokoro":
         langs_voices = helpers.get_langs_voices_kokoro()
+    elif tts_name == "chatterbox":
+        # Chatterbox does not currently provide a public voice listing endpoint.
+        # We expose a minimal set so user can proceed; voice library is user-managed.
+        # If CHATTERBOX_VOICE env var is set, prefer it; otherwise provide a placeholder.
+        default_voice = CHATTERBOX_VOICE if CHATTERBOX_VOICE else "my-custom-voice"
+        # Provide a few common language codes; user can override via dropdown.
+        langs_voices = {
+            "en-US": [default_voice],
+            "zh-CN": [default_voice],
+            "ja-JP": [default_voice],
+        }
     
     lang_choices = list(langs_voices.keys())
     default_lang = "en-US" if "en-US" in lang_choices else next(iter(lang_choices), None)
@@ -279,7 +307,7 @@ def launch_gui(host: str = "127.0.0.1", port: int = 7860):
 
         gr.Markdown("### 🎙 TTS Settings")
         with gr.Row(equal_height=True):
-            tts_engine = gr.Dropdown(choices=["Azure", "Kokoro"],
+            tts_engine = gr.Dropdown(choices=["Azure", "Kokoro", "Chatterbox"],
                                      label="TTS Engine",
                                      value=None,
                                      interactive=True
@@ -333,6 +361,12 @@ def launch_gui(host: str = "127.0.0.1", port: int = 7860):
                                         info="Set the max number of parallel worker processes",
                                         interactive=True
                                         )
+            gr.Markdown("#### 🔧 Chatterbox Overrides (only used when engine = Chatterbox)")
+            with gr.Row():
+                chatterbox_exaggeration = gr.Slider(0.0, 2.0, step=0.05, value=0.5, label="Exaggeration", info="Emotion intensity (default 0.5)")
+                chatterbox_cfg_weight = gr.Slider(0.0, 1.0, step=0.05, value=0.5, label="CFG Weight", info="Pace / guidance weight (default 0.5)")
+                chatterbox_temperature = gr.Slider(0.1, 1.5, step=0.05, value=0.8, label="Temperature", info="Sampling randomness (default 0.8)")
+                chatterbox_voice = gr.Textbox(label="Voice Override", placeholder="Optional explicit voice; else uses tts_voice or env")
 
         with gr.Row():
             run_btn = gr.Button(BTN_RUN_IDLE, variant="primary")
@@ -352,7 +386,8 @@ def launch_gui(host: str = "127.0.0.1", port: int = 7860):
             inputs=[
                 input_file, output_dir, log_level, cleanup,
                 tts_engine, tts_lang, tts_voice, tts_speed,
-                tts_chunk_len, newline_mode, align_threshold, max_workers
+                tts_chunk_len, newline_mode, align_threshold, max_workers,
+                chatterbox_exaggeration, chatterbox_cfg_weight, chatterbox_temperature, chatterbox_voice
             ],
             outputs=None
         )

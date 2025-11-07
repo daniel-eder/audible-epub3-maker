@@ -41,13 +41,14 @@ def parse_args():
     parser.add_argument(
         "--tts_engine",
         type=str.lower,
-        choices=["azure", "kokoro"],
+        choices=["azure", "kokoro", "chatterbox"],
         default="azure",
         help=(
             "TTS engine to use (default: azure). \n"
             "Voice & language references: \n"
             "  Azure: https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=tts \n"
-            "  Kokoro: https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md"
+            "  Kokoro: https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md \n"
+            "  Chatterbox (self-hosted): voice list is user-managed; see its README for details."
         )
     )
 
@@ -120,6 +121,32 @@ def parse_args():
         action="store_true",
         default=False,
         help="Remove temporary files after generation."
+    )
+
+    # === Chatterbox specific optional overrides ===
+    parser.add_argument(
+        "--chatterbox_exaggeration",
+        type=float,
+        default=None,
+        help="Override emotion exaggeration (float). If omitted, uses env CHATTERBOX_EXAGGERATION or default."
+    )
+    parser.add_argument(
+        "--chatterbox_cfg_weight",
+        type=float,
+        default=None,
+        help="Override CFG/guidance weight (float). If omitted, uses env CHATTERBOX_CFG_WEIGHT or default."
+    )
+    parser.add_argument(
+        "--chatterbox_temperature",
+        type=float,
+        default=None,
+        help="Override sampling temperature (float). If omitted, uses env CHATTERBOX_TEMPERATURE or default."
+    )
+    parser.add_argument(
+        "--chatterbox_voice",
+        type=str,
+        default=None,
+        help="Explicit voice override for chatterbox engine (takes precedence over CHATTERBOX_VOICE and --tts_voice)."
     )
 
     return parser.parse_args()
