@@ -20,7 +20,7 @@ on:
 
 jobs:
   build:
-    if: ${{ github.repository == 'funway/audible-epub3-maker' }}
+    if: ${{ github.repository == 'daniel-eder/audible-epub3-maker' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read              # Repository contents
