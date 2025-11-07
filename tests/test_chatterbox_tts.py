@@ -37,3 +37,7 @@ def test_chatterbox_html_to_speech(tmp_path: Path):
     assert len(wbs) > 0, "Heuristic word boundaries should be generated"
     # Ensure we called API the expected number of times (single chunk for short input)
     post_mock.assert_called_once()
+    # Verify voice included in payload (default fallback to settings.tts_voice)
+    sent_json = post_mock.call_args.kwargs.get("json")
+    assert "voice" in sent_json and sent_json["voice"], "Voice should be present in chatterbox payload"
+

@@ -19,6 +19,28 @@ When the provider posts JSON `{input: <text>}` to `/v1/audio/speech`
 Then it receives WAV bytes
 And saves merged audio to the target file
 
+#### Scenario: Voice precedence resolution
+Given `settings.chatterbox_voice` is set to `alt-voice`
+And environment variable `CHATTERBOX_VOICE` is set to `env-voice`
+And `settings.tts_voice` is `fallback-voice`
+When synthesis executes
+Then the POST body contains `{"voice": "alt-voice"}`
+And does not contain `env-voice` or `fallback-voice`
+
+#### Scenario: Environment voice fallback
+Given `settings.chatterbox_voice` is unset
+And environment variable `CHATTERBOX_VOICE` is `env-voice`
+And `settings.tts_voice` is `fallback-voice`
+When synthesis executes
+Then the POST body contains `{"voice": "env-voice"}`
+
+#### Scenario: Default to tts_voice
+Given `settings.chatterbox_voice` is unset
+And environment variable `CHATTERBOX_VOICE` is empty
+And `settings.tts_voice` is `fallback-voice`
+When synthesis executes
+Then the POST body contains `{"voice": "fallback-voice"}`
+
 #### Scenario: Apply optional parameters
 Given environment variables `CHATTERBOX_EXAGGERATION`, `CHATTERBOX_CFG_WEIGHT`, `CHATTERBOX_TEMPERATURE`
 When synthesis executes

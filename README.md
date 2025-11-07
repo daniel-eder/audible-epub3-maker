@@ -60,6 +60,7 @@ Depending on the engine you plan to use, follow the steps below:
     - `CHATTERBOX_EXAGGERATION` (default `0.5`)
     - `CHATTERBOX_CFG_WEIGHT` (default `0.5`)
     - `CHATTERBOX_TEMPERATURE` (default `0.8`)
+    - `CHATTERBOX_VOICE` (optional explicit voice override)
   - Voice / language is controlled via the standard `--tts_voice` / `--tts_lang` options; ensure the voice exists in your Chatterbox voice library.
 
 
@@ -216,6 +217,11 @@ Optional tuning via environment overrides:
 CHATTERBOX_EXAGGERATION=0.7 CHATTERBOX_CFG_WEIGHT=0.4 CHATTERBOX_TEMPERATURE=0.9 \
 python main.py book.epub --tts_engine chatterbox
 ```
+
+Voice resolution precedence (first found wins):
+1. CLI/internal `settings.chatterbox_voice`
+2. `CHATTERBOX_VOICE` env var
+3. `--tts_voice` / `settings.tts_voice`
 
 If you have not added custom voices yet, Chatterbox will use its default.
 

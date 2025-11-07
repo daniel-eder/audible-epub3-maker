@@ -13,6 +13,7 @@ CHATTERBOX_TTS_URL = os.environ.get("CHATTERBOX_TTS_URL", "http://localhost:4123
 CHATTERBOX_EXAGGERATION = float(os.environ.get("CHATTERBOX_EXAGGERATION", 0.5))  # Emotion intensity
 CHATTERBOX_CFG_WEIGHT = float(os.environ.get("CHATTERBOX_CFG_WEIGHT", 0.5))      # Pace control
 CHATTERBOX_TEMPERATURE = float(os.environ.get("CHATTERBOX_TEMPERATURE", 0.8))    # Sampling randomness
+CHATTERBOX_VOICE = os.environ.get("CHATTERBOX_VOICE", "")  # Optional explicit voice name override
 
 AUDIBLE_EPUB3_MAKER_ENV = os.environ.get("AUDIBLE_EPUB3_MAKER_ENV", "production")
 
@@ -41,6 +42,7 @@ class UserSettings:
         self.chatterbox_exaggeration: float | None = None
         self.chatterbox_cfg_weight: float | None = None
         self.chatterbox_temperature: float | None = None
+        self.chatterbox_voice: str | None = None  # If set, overrides CHATTERBOX_VOICE and tts_voice for chatterbox engine
 
         # Force alignment similarity threshold
         self.align_threshold: float = 95.0

@@ -12,6 +12,7 @@ from audible_epub3_maker.config import (
     CHATTERBOX_EXAGGERATION,
     CHATTERBOX_CFG_WEIGHT,
     CHATTERBOX_TEMPERATURE,
+    CHATTERBOX_VOICE,
     in_dev,
 )
 from audible_epub3_maker.utils import helpers
@@ -89,8 +90,12 @@ class ChatterboxTTS(BaseTTS):
             "input": chunk_text,
         }
         # Optional voice selection
-        if settings.tts_voice:
-            payload["voice"] = settings.tts_voice
+        # Resolve voice precedence: settings.chatterbox_voice > CHATTERBOX_VOICE > settings.tts_voice
+        voice_override = settings.chatterbox_voice if settings.chatterbox_voice else None
+        env_voice = voice_override or (CHATTERBOX_VOICE if CHATTERBOX_VOICE else None)
+        final_voice = env_voice or (settings.tts_voice if settings.tts_voice else None)
+        if final_voice:
+            payload["voice"] = final_voice
         # Include optional parameters (CLI overrides first)
         exaggeration = settings.chatterbox_exaggeration if settings.chatterbox_exaggeration is not None else CHATTERBOX_EXAGGERATION
         cfg_weight = settings.chatterbox_cfg_weight if settings.chatterbox_cfg_weight is not None else CHATTERBOX_CFG_WEIGHT
