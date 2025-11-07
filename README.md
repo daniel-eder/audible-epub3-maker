@@ -1,6 +1,6 @@
 # 🎧 Audible EPUB3 Maker
 
-Generate audiobooks from plain EPUB files in **EPUB3 Media Overlays** format using high-quality TTS (Text-to-Speech) engines like **Azure** and **Kokoro**, now with an intuitive **Web GUI**.
+Generate audiobooks from plain EPUB files in **EPUB3 Media Overlays** format using high-quality TTS (Text-to-Speech) engines like **Azure**, **Kokoro**, and **Chatterbox**, now with an intuitive **Web GUI**.
 
 You can read or listen to the generated EPUB using any ebook reader that supports EPUB 3 Media Overlays, such as Thorium Reader. The generated MP3 files can also be played with any standard audio player.
 
@@ -12,6 +12,7 @@ You can read or listen to the generated EPUB using any ebook reader that support
 - Supports TTS engines:
   - [Azure TTS](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/get-started-text-to-speech) (high-quality cloud service)
   - [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (offline open-source model, currently supports English text alignment only)
+  - [Chatterbox TTS API](https://github.com/travisvn/chatterbox-tts-api) (self-hosted OpenAI-compatible multilingual & voice cloning)
 - Automatic sentence segmentation and force alignment
 - Parallel multi-process generation
 - Gradio-based Web GUI for easy interaction without command line
@@ -51,6 +52,15 @@ Depending on the engine you plan to use, follow the steps below:
 - **Kokoro**:
   - No environment configuration is required.
   - The model file will automatically download on first use.
+
+- **Chatterbox (self-hosted)**:
+  - Run the Chatterbox API (see docker compose example below) or follow its README.
+  - Environment variables (with defaults) consumed by this project:
+    - `CHATTERBOX_TTS_URL` (default `http://localhost:4123`)
+    - `CHATTERBOX_EXAGGERATION` (default `0.5`)
+    - `CHATTERBOX_CFG_WEIGHT` (default `0.5`)
+    - `CHATTERBOX_TEMPERATURE` (default `0.8`)
+  - Voice / language is controlled via the standard `--tts_voice` / `--tts_lang` options; ensure the voice exists in your Chatterbox voice library.
 
 
 ### 🐳 From Docker
@@ -118,7 +128,7 @@ python main.py <input_file.epub> [options]
 |-----------------------|--------------------------------------------------|-----------------------------|
 | `-d`, `--output_dir`  | Output directory                                 | `<input_file_stem>_audible` |
 | `--log_level`         | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) | INFO                     |
-| `--tts_engine`        | TTS engine (`azure` or `kokoro`)                 | azure                       |
+| `--tts_engine`        | TTS engine (`azure` or `kokoro` or `chatterbox`) | azure                       |
 | `--tts_lang`          | Language code                                    | en-US                       |
 | `--tts_voice`         | Voice name                                       | en-US-AvaMultilingualNeural |
 | `--tts_speed`         | Playback speed (e.g., 1.0 = normal)              | 1.0                         |
@@ -177,7 +187,36 @@ This project is licensed under the MIT License.
 - Support more TTS models
 - Implement voice preview and cost estimation for commercial models
 - Integrate WhisperX for audio-text alignment in TTS models without native word boundary output
+  - (Chatterbox integration currently uses heuristic word boundaries)
   
 ---
+
+## 🗣️ Using the Chatterbox TTS Engine
+
+### Quick Start (Docker Compose)
+Use the provided `docker-compose.chatterbox.example.yml` to run both services:
+
+```bash
+docker compose -f docker-compose.chatterbox.example.yml up -d
+```
+
+This launches:
+- `chatterbox-tts` on port 4123
+- `aem-web` (this project Web GUI) on port 7860 configured with `TTS_ENGINE=chatterbox`
+
+### CLI Example
+```bash
+python main.py book.epub \
+  --tts_engine chatterbox \
+  --tts_voice my-custom-voice \
+  --tts_lang en-US
+```
+Optional tuning via environment overrides:
+```bash
+CHATTERBOX_EXAGGERATION=0.7 CHATTERBOX_CFG_WEIGHT=0.4 CHATTERBOX_TEMPERATURE=0.9 \
+python main.py book.epub --tts_engine chatterbox
+```
+
+If you have not added custom voices yet, Chatterbox will use its default.
 
 

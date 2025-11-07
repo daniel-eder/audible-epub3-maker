@@ -1,0 +1,32 @@
+services:
+  chatterbox-tts:
+    image: travisvn/chatterbox-tts-api:latest
+    container_name: chatterbox-tts
+    ports:
+      - "4123:4123"
+    environment:
+      - PORT=4123
+      - USE_MULTILINGUAL_MODEL=true
+      - EXAGGERATION=0.5
+      - CFG_WEIGHT=0.5
+      - TEMPERATURE=0.8
+    volumes:
+      - ./chatterbox-cache:/cache
+    restart: unless-stopped
+
+  aem-web:
+    image: ghcr.io/funway/audible-epub3-maker
+    depends_on:
+      - chatterbox-tts
+    ports:
+      - "7860:7860"
+    environment:
+      - TTS_ENGINE=chatterbox
+      - CHATTERBOX_TTS_URL=http://chatterbox-tts:4123
+      # Optional overrides (uncomment to tweak)
+      # - CHATTERBOX_EXAGGERATION=0.7
+      # - CHATTERBOX_CFG_WEIGHT=0.4
+      # - CHATTERBOX_TEMPERATURE=0.9
+    volumes:
+      - ./output:/app/output
+    restart: unless-stopped

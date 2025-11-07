@@ -9,5 +9,9 @@ def create_tts_engine(tts_name: str):
         from audible_epub3_maker.tts.kokoro_tts import KokoroTTS
         return KokoroTTS()
     
+    elif "chatterbox" == tts_name:
+        from audible_epub3_maker.tts.chatterbox_tts import ChatterboxTTS
+        return ChatterboxTTS()
+    
     else:
         raise ValueError(f"Unsupported TTS engine: {tts_name}")

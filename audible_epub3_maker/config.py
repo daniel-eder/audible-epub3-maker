@@ -8,6 +8,12 @@ load_dotenv(override=False)  # Load variables from .env into os.environ if not a
 AZURE_TTS_KEY = os.environ.get("AZURE_TTS_KEY", "")
 AZURE_TTS_REGION = os.environ.get("AZURE_TTS_REGION", "")
 
+# Chatterbox TTS configuration (self-hosted HTTP API)
+CHATTERBOX_TTS_URL = os.environ.get("CHATTERBOX_TTS_URL", "http://localhost:4123")  # Base URL (no trailing slash)
+CHATTERBOX_EXAGGERATION = float(os.environ.get("CHATTERBOX_EXAGGERATION", 0.5))  # Emotion intensity
+CHATTERBOX_CFG_WEIGHT = float(os.environ.get("CHATTERBOX_CFG_WEIGHT", 0.5))      # Pace control
+CHATTERBOX_TEMPERATURE = float(os.environ.get("CHATTERBOX_TEMPERATURE", 0.8))    # Sampling randomness
+
 AUDIBLE_EPUB3_MAKER_ENV = os.environ.get("AUDIBLE_EPUB3_MAKER_ENV", "production")
 
 
@@ -31,6 +37,10 @@ class UserSettings:
         self.tts_voice: str = "en-US-AvaMultilingualNeural"
         self.tts_chunk_len: int = -1  # Max chars length per chunk for a TTS request.
         self.tts_speed: float = 1.0
+        # (Chatterbox specific optional overrides; if None fall back to env defaults above)
+        self.chatterbox_exaggeration: float | None = None
+        self.chatterbox_cfg_weight: float | None = None
+        self.chatterbox_temperature: float | None = None
 
         # Force alignment similarity threshold
         self.align_threshold: float = 95.0

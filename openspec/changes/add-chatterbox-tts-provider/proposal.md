@@ -37,7 +37,7 @@ Add `chatterbox_tts.py` implementing `BaseTTS.html_to_speech`:
    - voice (optional)
    - exaggeration, temperature, cfg_weight (optional)
 3. Receive WAV (default) and save to temporary file.
-4. Since no word boundaries: return empty list OR attempt heuristic token boundaries (future). For now return empty list and allow worker to degrade gracefully (skip alignment but proceed embedding audio).
+4. Since no native word boundaries: fabricate heuristic token boundaries (evenly distributed over audio duration) to preserve downstream alignment behavior.
 5. Update `create_tts_engine` factory.
 6. Add env/config fields: `CHATTERBOX_TTS_BASE_URL`, `CHATTERBOX_TTS_VOICE`, `CHATTERBOX_TTS_EXAGGERATION`, `CHATTERBOX_TTS_TEMPERATURE`, `CHATTERBOX_TTS_CFG_WEIGHT`.
 7. README section & docker-compose example running both services.
